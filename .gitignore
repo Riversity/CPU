@@ -1,3 +1,6 @@
-testcases
-sim
+.vscode
+prj
 script
+testcases
+doc
+*_test.v
