@@ -62,6 +62,10 @@ module insfetch (
     else begin // not stuck
       if (give_you && !rob_rs_slb_full) begin // has input, not full
         is_ins <= 1;
+        if (give_you_ins == 32'h0ff00513) begin // HALT
+          stuck <= 1;
+          // PC <= PC;
+        end
         if (give_you_ins[6:0] == `ojalr) begin
           stuck <= 1;
           PC <= rob_new_pc;
