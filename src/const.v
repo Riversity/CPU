@@ -2,6 +2,11 @@
 `define ROB (1 << `ROB_BIT)
 `define ROB_R `ROB_BIT-1:0
 
+`define RS_BIT 4
+`define RS (1 << `RS_BIT)
+`define RS_R `RS_BIT-1:0
+`define RS_A 0:`RS-1
+
 `define LUI   6'd0
 `define AUIPC 6'd1
 `define JAL   6'd2
@@ -41,3 +46,13 @@
 `define AND   6'd36
 `define HALT  6'd37
 `define NIL   6'd38
+
+`define olui   7'b0110111
+`define oauipc 7'b0010111
+`define ojal   7'b1101111
+`define ojalr  7'b1100111
+`define ob     7'b1100011
+`define ol     7'b0000011
+`define os     7'b0100011
+`define ori    7'b0010011
+`define orr    7'b0110011
