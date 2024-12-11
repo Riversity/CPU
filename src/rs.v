@@ -7,13 +7,13 @@ module rs (
   input wire rst_in,
   input wire rdy_in,
 
-  // from/to ROB
+  // from ROB
   input wire rob_clear,
 
-  // from/to decoder
+  // from decoder
   input wire is_dc,
   input wire [31:0]   dc_pc,
-  input wire [10:0]   dc_op, // {ins[6:0], ins[14:12], ins[30]}
+  input wire [10:0]   dc_op, // {ins[30], ins[14:12], ins[6:0]}
   input wire [31:0]   dc_imm,
   input wire          dc_iQi,
   input wire [`ROB_R] dc_Qi,
@@ -25,9 +25,16 @@ module rs (
 
   output wire rs_full,
 
+  // from lsb, update Q
+  input wire is_lsb,
+  input wire [`ROB_R] lsb_rob_id,
+  input wire [31:0] lsb_res,
+
+  // from alu, to rob
   output wire rs_has_output,
-  output wire [`ROB_R] rs_rob_id,
-  output wire [31:0] rs_output
+  output wire [`ROB_R] rs_rob_id, // last output used to update current input Q
+  output wire [31:0] rs_output,
+  output wire [31:0] jalr_new_pc
 );
   reg          busy[`RS_A];
   reg [31:0]   pc  [`RS_A];
@@ -68,11 +75,62 @@ module rs (
     .op(op[pos]),
     .v1(V1[pos]),
     .v2(V2[pos]),
+    .pc(pc[pos]),
     .imm(imm[pos]),
     .in_rob_id(Qdes[pos]),
     .has_output(rs_has_output),
     .rob_id(rs_rob_id),
-    .value(rs_output)
+    .value(rs_output),
+    .new_pc(jalr_new_pc)
   );
 
+  always @(posedge clk_in) begin : REGFILE
+    integer i;
+    if (rst_in || rob_clear) begin
+      for (i = 0; i < `RS; i = i + 1) begin
+        busy[i] <= 0;
+      end
+    end
+    else if (!rdy_in) begin end
+    else begin
+      // insert
+      if (is_dc) begin // guaranteed !rs_full
+        busy[first_empty] <= 1;
+        pc[first_empty] <= dc_pc;
+        op[first_empty] <= dc_op;
+        imm[first_empty] <= dc_imm;
+        Q1[first_empty] <= dc_Qi;
+        Q2[first_empty] <= dc_Qj;
+        // consider output of this cycle
+        iQ1[first_empty] <= dc_iQi || (rs_has_output && rs_rob_id == dc_Qi) || (is_lsb && lsb_rob_id == dc_Qi);
+        iQ2[first_empty] <= dc_iQj || (rs_has_output && rs_rob_id == dc_Qj) || (is_lsb && lsb_rob_id == dc_Qj);
+        V1[first_empty] <= dc_iQi ? dc_Vi : (rs_has_output && rs_rob_id == dc_Qi) ? rs_output : (is_lsb && lsb_rob_id == dc_Qi) ? lsb_res : {32{1'bx}};
+        V2[first_empty] <= dc_iQj ? dc_Vj : (rs_has_output && rs_rob_id == dc_Qj) ? rs_output : (is_lsb && lsb_rob_id == dc_Qj) ? lsb_res : {32{1'bx}};
+        Qdes[first_empty] <= dc_Qdest;
+      end
+      // update
+      for (i = 0; i < `RS; i = i + 1) begin
+        if (busy[i]) begin
+          if (rs_has_output && !iQ1[i] && rs_rob_id == Q1[i]) begin
+            iQ1[i] <= 1;
+            V1[i] <= rs_output;
+          end
+          if (rs_has_output && !iQ2[i] && rs_rob_id == Q2[i]) begin
+            iQ2[i] <= 1;
+            V2[i] <= rs_output;
+          end
+          if (is_lsb && !iQ1[i] && lsb_rob_id == Q1[i]) begin
+            iQ1[i] <= 1;
+            V1[i] <= lsb_res;
+          end
+          if (is_lsb && !iQ2[i] && lsb_rob_id == Q2[i]) begin
+            iQ2[i] <= 1;
+            V2[i] <= lsb_res;
+          end
+        end
+      end
+      // free
+      if (is_work) busy[pos] <= 0;
+    end
+  end
 endmodule

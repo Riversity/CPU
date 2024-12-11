@@ -12,8 +12,8 @@ module insfetch (
   input wire give_you,
   input wire [31:0] give_you_ins,  
 
-  // TODO: c.add, PC + 2?
-  input wire [1:0] offset,
+  // TODO: c.add, PC + 2? // Judged inside
+  // input wire [1:0] offset,
 
   // to decoder
   output reg is_ins,
@@ -74,7 +74,8 @@ module insfetch (
           PC <= PC + {{12{give_you_ins[31]}}, give_you_ins[19:12], give_you_ins[20], give_you_ins[30:21], 1'b0};
         end
         else begin
-          PC <= PC + offset;
+          PC <= PC + (give_you_ins[1:0] == 2'b11) ? 4 : 2;
+          // judge c. by last 2 bit
         end
       end
     end
