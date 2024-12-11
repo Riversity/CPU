@@ -1,11 +1,17 @@
 `define ROB_BIT 6
 `define ROB (1 << `ROB_BIT)
 `define ROB_R `ROB_BIT-1:0
+`define ROB_A 0:`ROB-1
 
 `define RS_BIT 4
 `define RS (1 << `RS_BIT)
 `define RS_R `RS_BIT-1:0
 `define RS_A 0:`RS-1
+
+`define LSB_BIT 4
+`define LSB (1 << `LSB_BIT)
+`define LSB_R `LSB_BIT-1:0
+`define LSB_A 0:`LSB-1
 
 `define LUI   6'd0
 `define AUIPC 6'd1

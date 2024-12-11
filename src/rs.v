@@ -30,7 +30,7 @@ module rs (
   input wire [`ROB_R] lsb_rob_id,
   input wire [31:0] lsb_res,
 
-  // from alu, to rob
+  // to rob
   output wire rs_has_output,
   output wire [`ROB_R] rs_rob_id, // last output used to update current input Q
   output wire [31:0] rs_output,
@@ -44,9 +44,9 @@ module rs (
   reg [`ROB_R] Q1  [`RS_A];
   reg          iQ2 [`RS_A]; // iQ == 1 <=> Q == -1 <=> no dependency
   reg [`ROB_R] Q2  [`RS_A];
-  reg [`ROB_R] Qdes[`RS_A];
   reg [31:0]   V1  [`RS_A];
   reg [31:0]   V2  [`RS_A];
+  reg [`ROB_R] Qdes[`RS_A];
 
   wire         exec[`RS_A];
 
@@ -84,7 +84,7 @@ module rs (
     .new_pc(jalr_new_pc)
   );
 
-  always @(posedge clk_in) begin : REGFILE
+  always @(posedge clk_in) begin : RS
     integer i;
     if (rst_in || rob_clear) begin
       for (i = 0; i < `RS; i = i + 1) begin
