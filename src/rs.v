@@ -36,6 +36,7 @@ module rs (
   output wire [31:0] rs_output,
   output wire [31:0] jalr_new_pc
 );
+
   reg          busy[`RS_A];
   reg [31:0]   pc  [`RS_A];
   reg [10:0]   op  [`RS_A];

@@ -30,6 +30,7 @@ module insfetch (
   input wire [31:0] rob_new_pc,
   input wire cancel_stuck
 );
+
   reg stuck;
   reg [31:0] PC; // all pc is from here
 

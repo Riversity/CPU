@@ -34,7 +34,6 @@ module lsb (
   output reg [31:0] io_data,
   output reg [2:0] io_op, // ins[14:12]
 
-
   // from rs
   input wire is_rs,
   input wire [`ROB_R] rs_rob_id,
@@ -44,6 +43,7 @@ module lsb (
   output wire [`ROB_R] lsb_rob_id,
   output wire [31:0] lsb_output
 );
+
   reg [`LSB_R] head;
   reg [`LSB_R] tail;
   reg [`LSB_BIT:0] size;
@@ -130,5 +130,4 @@ module lsb (
       end
     end
   end
-
 endmodule
