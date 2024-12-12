@@ -7,12 +7,12 @@ module insfetch (
 
   output wire [31:0] out_PC,
 
-  // to/from mem manager or something
+  // to/from inscache
   output wire ask_for,
   input wire give_you,
   input wire [31:0] give_you_ins,  
 
-  // TODO: c.add, PC + 2? // Judged inside
+  // c.add, PC + 2 : Judged inside
   // input wire [1:0] offset,
 
   // to decoder
