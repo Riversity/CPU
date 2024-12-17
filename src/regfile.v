@@ -9,6 +9,7 @@ module regfile (
   // write value
   input wire     [4:0] set_id,
   input wire    [31:0] set_val,
+  input wire  [`ROB_R] set_from_rob_id, // if cur dep is the committing ROB, clear dep
 
   // read value
   input wire     [4:0] get_id_1,
@@ -71,11 +72,18 @@ module regfile (
     else begin
       if (set_id) begin
         REGS[set_id] <= set_val;
+        if (set_dep_id != set_id && DEP[set_id] == set_from_rob_id) begin
+          BUSY[set_id] <= 0;
+          DEP[set_id] <= 0;
+        end
       end
       if (set_dep_id) begin
         BUSY[set_dep_id] <= 1;
         DEP[set_dep_id] <= set_dep_Q;
       end
     end
+    // REGS[0] = 0;
+    // DEP[0] = 0;
+    // BUSY[0] = 0;
   end
 endmodule
