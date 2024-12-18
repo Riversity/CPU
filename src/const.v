@@ -62,3 +62,8 @@
 `define os     7'b0100011
 `define ori    7'b0010011
 `define orr    7'b0110011
+
+`define Stype 2'b00;
+`define Rtype 2'b01; // need to change reg
+`define Btype 2'b10; // change pc
+`define Jtype 2'b11; // jal jalr: change reg; change pc

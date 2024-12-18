@@ -39,6 +39,7 @@ module lsb (
   input wire [`ROB_R] rs_rob_id,
   input wire [31:0] rs_res,
 
+  // to rob
   output wire lsb_has_output,
   output wire [`ROB_R] lsb_rob_id,
   output wire [31:0] lsb_output

@@ -45,7 +45,7 @@ module insfetch (
 
   reg [1:0] predictor[255:0];
   wire pred = (g_ins[6:0] == `ob || g_ins[1:0] == 2'b01 && g_ins[15:14] == 2'b11) && predictor[res_pc_part][1];
-  wire no_jmp_PC = PC + (g_ins[1:0] == 2'b11) ? 4 : 2;
+  wire nu_jmp_PC = PC + (g_ins[1:0] == 2'b11) ? 4 : 2;
   // judge c. by last 2 bit
   wire da_jmp_PC = PC + g_ins[6:0] == `ob ? {{20{g_ins[31]}}, g_ins[7], g_ins[30:25], g_ins[11:8], 1'b0} : {{24{g_ins[12]}}, g_ins[6:5], g_ins[2], g_ins[11:10], g_ins[4:3], 1'b0};
 
@@ -88,7 +88,7 @@ module insfetch (
           PC <= PC + {{12{g_ins[31]}}, g_ins[19:12], g_ins[20], g_ins[30:21], 1'b0};
         end
         else begin
-          PC <= pred ? da_jmp_PC : no_jmp_PC;
+          PC <= pred ? da_jmp_PC : nu_jmp_PC;
           pred_jmp <= pred;
         end
       end
