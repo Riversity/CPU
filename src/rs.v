@@ -34,6 +34,7 @@ module rs (
   output wire rs_has_output,
   output wire [`ROB_R] rs_rob_id, // last output used to update current input Q
   output wire [31:0] rs_output,
+  output wire has_jalr_new_pc,
   output wire [31:0] jalr_new_pc
 );
 
@@ -82,6 +83,7 @@ module rs (
     .has_output(rs_has_output),
     .rob_id(rs_rob_id),
     .value(rs_output),
+    .has_new_pc(has_jalr_new_pc),
     .new_pc(jalr_new_pc)
   );
 

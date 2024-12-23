@@ -8,16 +8,19 @@ module rob (
   output reg rob_clear,
   output wire rob_empty,
   output wire rob_full,
+  output reg [31:0] new_pc,
+  output reg cancel_stuck,
 
   // from decoder
   input wire is_ins,
   input wire [31:0] ins,
   input wire [31:0] ins_pc,
   // input wire [31:0] ins_pred_pc,
-  input wire ins_already_done, // jal jalr auipc lui
-  input wire ins_result,
+  input wire ins_already_done, // jal auipc lui
+  input wire [31:0] ins_result, // jal jalr auipc lui
   input wire [4:0] ins_rd,
   input wire ins_pred_jmp,
+  input wire [31:0] another_addr, // br, different from predicted
   input wire [1:0] ins_type,
   // free pos
   output wire [`ROB_R] rob_free_id,
@@ -32,6 +35,7 @@ module rob (
   input wire rs_has_output,
   input wire [`ROB_R] rs_rob_id,
   input wire [31:0] rs_output,
+  input wire has_jalr_new_pc,
   input wire [31:0] jalr_new_pc,
 
   // to regfile
@@ -50,18 +54,19 @@ module rob (
   output wire [31:0] rob_val_2
 );
 
-  // stats : operation to do
-  localparam Issu = 2'b00;
-  localparam Exec = 2'b01;
+  // stats : 0 Issu/Exec, 1 Comt
+  // localparam Issu = 2'b00;
+  // localparam Exec = 2'b01;
   // localparam Wres = 2'b10;
-  localparam Comt = 2'b10;
+  // localparam Comt = 2'b11;
 
   reg busy[`ROB_A];
-  reg [1:0] stat[`ROB_A];
+  reg stat[`ROB_A];
   reg [1:0] type[`ROB_A];
   reg [31:0] val[`ROB_A];
   reg [4:0] rd[`ROB_A];
   reg pred_jmp[`ROB_A];
+  reg another_br[`ROB_A]; // either from jalr or from decoder branch
   reg [31:0] pc[`ROB_A];
 
   reg [`ROB_R] head;
@@ -77,7 +82,8 @@ module rob (
 
   // to regfile
   // set value
-  wire is_commit = busy[head] && stat[head] == Comt && type[head][1]; // rdy_in?
+  wire is_commit = busy[head] && stat[head] && type[head][0]; // rdy_in?
+  // type[head][0] is a goofy shorthand for (type == R or J)
   assign set_id = is_commit ? rd[head] : 0;
   assign set_from_rob_id = head;
   assign set_val = val[head];
@@ -86,18 +92,78 @@ module rob (
   assign set_dep_id = is_set_dep ? ins_rd : 0;
   assign set_dep_Q = tail;
   // set decoder new value through regfile
-  assign rob_avail_1 = stat[get_rob_id_1] == Comt || (rs_has_output && rs_rob_id == get_rob_id_1) || (lsb_has_output && lsb_rob_id == get_rob_id_1);
-  assign rob_avail_2 = stat[get_rob_id_2] == Comt || (rs_has_output && rs_rob_id == get_rob_id_2) || (lsb_has_output && lsb_rob_id == get_rob_id_2);
-  assign rob_val_1 = stat[get_rob_id_1] == Comt ? val[get_rob_id_1] : (rs_has_output && rs_rob_id == get_rob_id_1) ? rs_output : lsb_output;
-  assign rob_val_2 = stat[get_rob_id_2] == Comt ? val[get_rob_id_2] : (rs_has_output && rs_rob_id == get_rob_id_2) ? rs_output : lsb_output;
+  assign rob_avail_1 = stat[get_rob_id_1] || (rs_has_output && rs_rob_id == get_rob_id_1) || (lsb_has_output && lsb_rob_id == get_rob_id_1);
+  assign rob_avail_2 = stat[get_rob_id_2] || (rs_has_output && rs_rob_id == get_rob_id_2) || (lsb_has_output && lsb_rob_id == get_rob_id_2);
+  assign rob_val_1 = stat[get_rob_id_1] ? val[get_rob_id_1] : (rs_has_output && rs_rob_id == get_rob_id_1) ? rs_output : lsb_output;
+  assign rob_val_2 = stat[get_rob_id_2] ? val[get_rob_id_2] : (rs_has_output && rs_rob_id == get_rob_id_2) ? rs_output : lsb_output;
 
   always @(posedge clk_in) begin : ROB
     integer i;
-    if (rst_in) begin
+    if (!rdy_in) begin end
+    else if (rst_in || rob_clear) begin
+      rob_clear <= 0;
+      new_pc <= 0;
+      head <= 0;
+      tail <= 0;
+      cancel_stuck <= 0;
+      for (i = 0; i < `ROB; ++i) begin
+        busy[i] <= 0;
+        stat[i] <= 0;
+        type[i] <= 0;
+        val[i] <= 0;
+        rd[i] <= 0;
+        pred_jmp[i] <= 0;
+        another_br[i] <= 0;
+        pc[i] <= 0;
+      end
     end
-    else if (!rdy_in) begin end
     else begin
-
+      // write back
+      if (rs_has_output) begin
+        stat[rs_rob_id] <= 1;
+        val[rs_rob_id] <= rs_output;
+        if (has_jalr_new_pc) begin
+          another_br[rs_rob_id] <= jalr_new_pc;
+        end
+      end
+      if (lsb_has_output) begin
+        stat[lsb_rob_id] <= 1;
+        val[lsb_rob_id] <= lsb_output;
+      end
+      // issue
+      if (is_ins) begin
+        tail <= nx_tail;
+        busy[tail] <= 1;
+        stat[tail] <= ins_already_done;
+        type[tail] <= ins_type;
+        val[tail] <= ins_result;
+        rd[tail] <= ins_rd;
+        pred_jmp[tail] <= ins_pred_jmp;
+        another_br[tail] <= another_addr;
+        pc[tail] <= ins_pc;
+      end
+      // commit
+      if (busy[head] && stat[head]) begin
+        head <= nx_head;
+        busy[head] <= 0;
+        stat[head] <= 0;
+        if (pc[head][6:0] == `ojalr) begin
+          // can optimize, directly from alu to insfetch?
+          cancel_stuck <= 1;
+          new_pc <= another_addr[head];
+        end
+        else begin
+          cancel_stuck <= 0;
+        end
+        if (type[head] == `Btype) begin
+          if (val[head][0] != pred_jmp[head]) begin
+            // bad pred
+            rob_clear <= 1;
+            new_pc <= another_addr[head];
+          end
+        end
+      end
+      else cancel_stuck <= 0;
     end
   end
 endmodule

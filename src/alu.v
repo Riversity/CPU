@@ -14,6 +14,7 @@ module alu (
   output reg has_output,
   output reg [`ROB_R] rob_id,
   output reg [31:0] value,
+  output reg has_new_pc,
   output reg [31:0] new_pc
 );
 
@@ -23,6 +24,7 @@ module alu (
     end
     else begin
       has_output <= 1;
+      has_new_pc <= op[6:0] == `ojalr;
       rob_id <= in_rob_id;
       case (op[6:0])
         `olui: value <= imm;
