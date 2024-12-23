@@ -9,14 +9,14 @@ module rob (
   output wire rob_empty,
   output wire rob_full,
   output reg [31:0] new_pc,
-  output reg cancel_stuck,
+  // output reg cancel_stuck,
 
   // from decoder
   input wire is_ins,
   input wire [31:0] ins,
   input wire [31:0] ins_pc,
   // input wire [31:0] ins_pred_pc,
-  input wire ins_already_done, // jal auipc lui
+  input wire ins_already_done, // jal jalr auipc lui
   input wire [31:0] ins_result, // jal jalr auipc lui
   input wire [4:0] ins_rd,
   input wire ins_pred_jmp,
@@ -35,8 +35,6 @@ module rob (
   input wire rs_has_output,
   input wire [`ROB_R] rs_rob_id,
   input wire [31:0] rs_output,
-  input wire has_jalr_new_pc,
-  input wire [31:0] jalr_new_pc,
 
   // to regfile
   output wire [4:0] set_id,
@@ -105,7 +103,6 @@ module rob (
       new_pc <= 0;
       head <= 0;
       tail <= 0;
-      cancel_stuck <= 0;
       for (i = 0; i < `ROB; ++i) begin
         busy[i] <= 0;
         stat[i] <= 0;
@@ -122,9 +119,6 @@ module rob (
       if (rs_has_output) begin
         stat[rs_rob_id] <= 1;
         val[rs_rob_id] <= rs_output;
-        if (has_jalr_new_pc) begin
-          another_br[rs_rob_id] <= jalr_new_pc;
-        end
       end
       if (lsb_has_output) begin
         stat[lsb_rob_id] <= 1;
@@ -147,14 +141,11 @@ module rob (
         head <= nx_head;
         busy[head] <= 0;
         stat[head] <= 0;
-        if (pc[head][6:0] == `ojalr) begin
-          // can optimize, directly from alu to insfetch?
-          cancel_stuck <= 1;
-          new_pc <= another_addr[head];
-        end
-        else begin
-          cancel_stuck <= 0;
-        end
+        // if (pc[head][6:0] == `ojalr) begin
+        //   // can optimize, directly from alu to insfetch!
+        //   cancel_stuck <= 1;
+        //   new_pc <= another_addr[head];
+        // end
         if (type[head] == `Btype) begin
           if (val[head][0] != pred_jmp[head]) begin
             // bad pred
@@ -163,7 +154,6 @@ module rob (
           end
         end
       end
-      else cancel_stuck <= 0;
     end
   end
 endmodule

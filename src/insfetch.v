@@ -29,7 +29,10 @@ module insfetch (
   // from rob
   input wire rob_clear,
   input wire [31:0] rob_new_pc,
+
+  // from rs(alu)
   input wire cancel_stuck,
+  input wire [31:0] jalr_new_pc,
 
   // from rob predictor res
   input wire is_res,
@@ -69,7 +72,7 @@ module insfetch (
       is_ins <= 0;
       if (cancel_stuck) begin
         stuck <= 0;
-        PC <= rob_new_pc;
+        PC <= jalr_new_pc;
       end
     end
     else begin // not stuck

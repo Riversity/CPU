@@ -34,7 +34,7 @@ module rs (
   output wire rs_has_output,
   output wire [`ROB_R] rs_rob_id, // last output used to update current input Q
   output wire [31:0] rs_output,
-  output wire has_jalr_new_pc,
+  output wire has_jalr_new_pc, // cancel_stuck
   output wire [31:0] jalr_new_pc
 );
 
