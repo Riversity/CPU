@@ -28,7 +28,7 @@ module lsb (
   input wire mem_res_avail,
   input wire [31:0] mem_res,
   input wire mem_stuck,
-  output reg is_io,
+  output wire is_io,
   output reg is_store, // 0 load 1 store
   output reg [31:0] io_addr,
   output reg [31:0] io_data,
@@ -64,6 +64,7 @@ module lsb (
   reg [`ROB_R] Qdes[`RS_A];
 
   reg working;
+  assign is_io = working;
 
   // output
   assign lsb_has_output = mem_res_avail;
@@ -78,7 +79,6 @@ module lsb (
         tail <= 0;
         size <= 0;
         working <= 0;
-        is_io <= 0;
       end
     end
     else if (!rdy_in) begin end
@@ -118,7 +118,6 @@ module lsb (
       // work
       if (size != 0 && working == 0 && !mem_stuck && iQ1[head] && iQ2[head] && (op[head][6:0] == `ol || (!rob_empty && rob_head_id == Qdes[head]))) begin
         working <= 1;
-        is_io <= 1;
         is_store <= op[head][6:0] == `os;
         io_addr <= V1[head] + imm[head];
         io_data <= V2[head];
