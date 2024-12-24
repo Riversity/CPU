@@ -39,7 +39,8 @@ module memctrl (
   reg [1:0] cur; // current position, 0, 1, 2, 3
 
   assign is_back = busy && stat[1] && (cur == 0);
-  assign back_ins = {data[31:8], read};
+  assign back_ins = io_op == 3'b000 ? {{24{read[7]}}, read} : (io_op == 3'b001 ? {{16{data[15]}}, data[15:8], read} : {data[31:8], read});
+  // sign extension
   assign mem_res_avail = busy && (!stat[1]) && (cur == 0);
   assign mem_res = {data[31:8], read};
 
