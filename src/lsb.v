@@ -12,7 +12,7 @@ module lsb (
 
   // from decoder
   input wire is_dc,
-  input wire [10:0]   dc_op, // {ins[30], ins[14:12], ins[6:0]}
+  input wire [9:0]   dc_op, // {ins[14:12], ins[6:0]}
   input wire [31:0]   dc_imm,
   input wire          dc_iQi,
   input wire [`ROB_R] dc_Qi,
