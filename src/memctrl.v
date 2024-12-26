@@ -36,13 +36,13 @@ module memctrl (
   assign working = busy;
 
   reg [1:0] stat; // 00 load 01 store 10 ins
-  reg [1:0] cur; // current position, 0, 1, 2, 3
+  reg [2:0] cur; // current position, 0, 1, 2, 3, 4 // because read is available 2 cycles later
 
   assign is_back = busy && stat[1] && (cur == 0);
-  assign back_ins = io_op == 3'b000 ? {{24{read[7]}}, read} : (io_op == 3'b001 ? {{16{data[15]}}, data[15:8], read} : {data[31:8], read});
-  // sign extension
+  assign back_ins = {data[31:8], read};
   assign mem_res_avail = busy && (!stat[1]) && (cur == 0);
-  assign mem_res = {data[31:8], read};
+  assign mem_res = io_op == 3'b000 ? {{24{read[7]}}, read} : (io_op == 3'b001 ? {{16{data[15]}}, data[15:8], read} : {data[31:8], read});
+  // sign extension
 
   always @(posedge clk_in) begin : MEMCTRL
     if (rst_in) begin
@@ -65,16 +65,16 @@ module memctrl (
             is_write <= 1;
             case (io_op[1:0])
               2'b00: begin cur <= 0; addr <= io_addr; write <= io_data[7:0]; end
-              2'b01: begin cur <= 1; addr <= io_addr + 8; write <= io_data[15:8]; end
-              2'b10: begin cur <= 3; addr <= io_addr + 24; write <= io_data[31:24]; end
+              2'b01: begin cur <= 1; addr <= io_addr + 2; write <= io_data[15:8]; end
+              2'b10: begin cur <= 3; addr <= io_addr + 3; write <= io_data[31:24]; end
             endcase
           end
           else begin
             is_write <= 0;
             case (io_op[1:0])
-              2'b00: begin cur <= 0; addr <= io_addr; end
-              2'b01: begin cur <= 1; addr <= io_addr + 8; end
-              2'b10: begin cur <= 3; addr <= io_addr + 24; end
+              2'b00: begin cur <= 1; addr <= io_addr; end
+              2'b01: begin cur <= 2; addr <= io_addr + 2; end
+              2'b10: begin cur <= 4; addr <= io_addr + 3; end
             endcase
           end
         end
@@ -82,11 +82,12 @@ module memctrl (
           busy <= 1;
           stat <= 2'b10;
           is_write <= 0;
-          cur <= 3;
-          addr <= io_addr + 24; 
+          cur <= 4;
+          addr <= fetch_addr + 3; 
         end
         else begin
           data <= 0;
+          addr <= 0;
           is_write <= 0;
           cur <= 0;
         end
@@ -97,7 +98,7 @@ module memctrl (
           busy <= 0;
           data <= 0;
           is_write <= 0;
-          cur <= 3;
+          cur <= 4;
         end
         else if (!io_buffer_full) begin
           cur <= cur - 1;
@@ -108,7 +109,7 @@ module memctrl (
               1: write <= io_data[7:0];
             endcase
             is_write <= 1;
-            addr <= addr - 8;
+            addr <= addr - 1;
           end
           else begin
             case (cur)
@@ -117,7 +118,7 @@ module memctrl (
               1: data[15:8] <= read;
             endcase
             is_write <= 0;
-            addr <= addr - 8;
+            addr <= addr - 1;
           end
         end
       end

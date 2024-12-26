@@ -1,16 +1,6 @@
 // RISCV32 CPU top module
 // port modification allowed for debugging purposes
 `include "const.v"
-
-`include "regfile.v"
-`include "decode.v"
-`include "inscache.v"
-`include "insfetch.v"
-`include "memctrl.v"
-`include "lsb.v"
-`include "rs.v"
-`include "rob.v"
-
 module cpu (
   input  wire        clk_in,      // system clock signal
   input  wire        rst_in,      // reset signal
@@ -325,8 +315,10 @@ decode Decode (
   .lsb_Vi(lsb_Vi),
   .lsb_Vj(lsb_Vj),
   .rob_full(rob_full),
+  .rob_clear(rob_clear),
   .rob_free_id(rob_free_id),
   .r_is_ins(is_r_ins),
+  .r_ins(r_ins),
   .r_ins_pc(r_ins_pc),
   .r_ins_already_done(r_ins_already_done),
   .r_ins_result(r_ins_result),

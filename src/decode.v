@@ -56,6 +56,7 @@ module decode (
 
   // with rob
   input wire rob_full,
+  input wire rob_clear,
   input wire [`ROB_R] rob_free_id,
   output reg r_is_ins,
   output reg [31:0] r_ins,
@@ -103,15 +104,20 @@ module decode (
   wire to_rs = op == `ojalr || op == `ob || op == `ori || op == `orr;
   wire to_lsb = op == `os || op == `ol;
 
+  reg [31:0] last_addr;
+
   always @(posedge clk_in) begin : DECODE
-    if (rst_in) begin
+    if (rst_in || rob_clear) begin
       is_rs <= 0;
       is_lsb <= 0;
       r_is_ins <= 0;
+      last_addr <= 32'hffffffff;
     end
     else if (!rdy_in) begin end
     else begin
-      if (is_ins) begin
+      if (is_ins && ins_addr != last_addr) begin
+        last_addr <= ins_addr;
+
         is_rs <= to_rs;
         rs_pc <= ins_addr;
         rs_op <= {ins[30], ins[14:12], ins[6:0]};
@@ -144,5 +150,4 @@ module decode (
       end
     end
   end
-
 endmodule

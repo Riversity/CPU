@@ -26,7 +26,7 @@ module inscache (
 
   reg working;
 
-  wire index = pc[9:1];
+  wire [8:0] index = pc[9:1];
   wire just_from_mem = is_mem_back && send_addr == pc;
 
   assign is_ret = is_fetch && ((avail[index] && pc[16:10] == tag[index]) || just_from_mem);

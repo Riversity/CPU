@@ -49,9 +49,9 @@ module insfetch (
 
   reg [1:0] predictor[255:0];
   wire pred = (g_ins[6:0] == `ob || g_ins[1:0] == 2'b01 && g_ins[15:14] == 2'b11) && predictor[res_pc_part][1];
-  wire nu_jmp_PC = PC + ((g_ins[1:0] == 2'b11) ? 4 : 2);
+  wire [31:0] nu_jmp_PC = PC + ((g_ins[1:0] == 2'b11) ? 4 : 2);
   // judge c. by last 2 bit
-  wire da_jmp_PC = PC + (g_ins[6:0] == `ob ? {{20{g_ins[31]}}, g_ins[7], g_ins[30:25], g_ins[11:8], 1'b0} : {{24{g_ins[12]}}, g_ins[6:5], g_ins[2], g_ins[11:10], g_ins[4:3], 1'b0});
+  wire [31:0] da_jmp_PC = PC + (g_ins[6:0] == `ob ? {{20{g_ins[31]}}, g_ins[7], g_ins[30:25], g_ins[11:8], 1'b0} : {{24{g_ins[12]}}, g_ins[6:5], g_ins[2], g_ins[11:10], g_ins[4:3], 1'b0});
 
   always @(posedge clk_in) begin : INSFETCH
     if (rst_in) begin

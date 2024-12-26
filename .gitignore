@@ -1,7 +1,10 @@
 .vscode
 prj
 script
+test
+testcase
 testcases
+testspace
 doc
 *_test.v
 a.out

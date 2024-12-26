@@ -1,6 +1,5 @@
 // Reservation Station
 `include "const.v"
-`include "alu.v"
 module rs (
   // RS_SIZE = 16
   input wire clk_in,
