@@ -19,7 +19,7 @@ module insfetch (
   output reg [31:0] ins_addr,
   output reg [31:0] ins,
   output reg pred_jmp,
-  output reg another_branch,
+  output reg [31:0] another_branch,
 
   // from decoder
   input wire rob_rs_slb_full,

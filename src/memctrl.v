@@ -24,7 +24,7 @@ module memctrl (
   input wire [2:0] io_op, // ins[14:12]
 
   // with ram
-  input wire io_buffer_full,
+  input wire io_buffer_full, // todo
   output reg [31:0] addr,
   output reg is_write, // reversed from ram notation!
   output reg [7:0] write,
@@ -56,7 +56,7 @@ module memctrl (
     end
     else if (!rdy_in) begin end
     else begin
-      if (!busy) begin
+      if (!busy && !io_buffer_full) begin
         if (is_io) begin // ls priority
           busy <= 1;
           stat <= {1'b0, is_store};
@@ -97,9 +97,9 @@ module memctrl (
           busy <= 0;
           data <= 0;
           is_write <= 0;
-          cur <= 0;
+          cur <= 3;
         end
-        else begin
+        else if (!io_buffer_full) begin
           cur <= cur - 1;
           if (stat[0]) begin // write
             case (cur)

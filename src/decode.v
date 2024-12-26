@@ -10,7 +10,7 @@ module decode (
   input wire [31:0] ins_addr,
   input wire [31:0] ins,
   input wire pred_jmp,
-  input wire pred_another,
+  input wire [31:0] pred_another,
 
   // to insfetch
   output wire f_stall, // rob_rs_slb_full

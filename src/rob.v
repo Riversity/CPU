@@ -49,7 +49,12 @@ module rob (
   output wire [31:0] rob_val_1,
   input wire [`ROB_R] get_rob_id_2,
   output wire rob_avail_2,
-  output wire [31:0] rob_val_2
+  output wire [31:0] rob_val_2,
+
+  // to insfetch branch predictor
+  output wire is_b_res,
+  output wire [7:0] b_res_pc_part,
+  output wire b_res_jmp
 );
 
   // stats : 0 Issu/Exec, 1 Comt
@@ -78,9 +83,13 @@ module rob (
   assign rob_head_id = head;
   assign rob_free_id = tail;
 
+  assign is_b_res = busy[head] && stat[head] && type[head] == `Btype;
+  assign b_res_pc_part = pc[head][8:1];
+  assign b_res_jmp = pred_jmp[head];
+
   // to regfile
   // set value
-  wire is_commit = busy[head] && stat[head] && type[head][0]; // rdy_in?
+  wire is_commit = rdy_in && busy[head] && stat[head] && type[head][0];
   // type[head][0] is a goofy shorthand for (type == R or J)
   assign set_id = is_commit ? rd[head] : 0;
   assign set_from_rob_id = head;

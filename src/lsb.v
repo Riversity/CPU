@@ -71,6 +71,8 @@ module lsb (
   assign lsb_rob_id = Qdes[head];
   assign lsb_output = mem_res;
 
+  wire [31:0] tmp_addr = V1[head] + imm[head];
+
   always @(posedge clk_in) begin : LSB
     integer i;
     if (rst_in || rob_clear) begin
@@ -116,10 +118,10 @@ module lsb (
         end
       end
       // work
-      if (size != 0 && working == 0 && !mem_stuck && iQ1[head] && iQ2[head] && (op[head][6:0] == `ol || (!rob_empty && rob_head_id == Qdes[head]))) begin
+      if (size != 0 && working == 0 && !mem_stuck && iQ1[head] && iQ2[head] && ((op[head][6:0] == `ol && tmp_addr != 32'h30000 && tmp_addr != 32'h30004) || (!rob_empty && rob_head_id == Qdes[head]))) begin
         working <= 1;
         is_store <= op[head][6:0] == `os;
-        io_addr <= V1[head] + imm[head];
+        io_addr <= tmp_addr;
         io_data <= V2[head];
         io_op <= op[head][9:7];
       end
