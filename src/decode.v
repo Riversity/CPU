@@ -29,30 +29,30 @@ module decode (
   input wire rs_full,
 
   output reg is_rs,
-  output reg [31:0]    rs_pc,
-  output reg [10:0]    rs_op, // {ins[30], ins[14:12], ins[6:0]}
-  output reg [31:0]    rs_imm,
-  output wire          rs_iQi,
-  output wire [`ROB_R] rs_Qi,
-  output wire          rs_iQj,
-  output wire [`ROB_R] rs_Qj,
-  output wire [`ROB_R] rs_Qdest,
-  output wire [31:0]   rs_Vi,
-  output wire [31:0]   rs_Vj,
+  output reg [31:0]   rs_pc,
+  output reg [10:0]   rs_op, // {ins[30], ins[14:12], ins[6:0]}
+  output reg [31:0]   rs_imm,
+  output reg          rs_iQi,
+  output reg [`ROB_R] rs_Qi,
+  output reg          rs_iQj,
+  output reg [`ROB_R] rs_Qj,
+  output wire [`ROB_R]rs_Qdest,
+  output reg [31:0]   rs_Vi,
+  output reg [31:0]   rs_Vj,
 
   // with lsb
   input wire lsb_full,
 
   output reg is_lsb,
   output reg [9:0]    lsb_op, // {ins[14:12], ins[6:0]}
-  output reg [31:0]    lsb_imm,
-  output wire          lsb_iQi,
-  output wire [`ROB_R] lsb_Qi,
-  output wire          lsb_iQj,
-  output wire [`ROB_R] lsb_Qj,
-  output wire [`ROB_R] lsb_Qdest,
-  output wire [31:0]   lsb_Vi,
-  output wire [31:0]   lsb_Vj,
+  output reg [31:0]   lsb_imm,
+  output reg          lsb_iQi,
+  output reg [`ROB_R] lsb_Qi,
+  output reg          lsb_iQj,
+  output reg [`ROB_R] lsb_Qj,
+  output wire [`ROB_R]lsb_Qdest,
+  output reg [31:0]   lsb_Vi,
+  output reg [31:0]   lsb_Vj,
 
   // with rob
   input wire rob_full,
@@ -82,21 +82,7 @@ module decode (
 
   // instant wire to regfile
   assign get_id_1 = rs1;
-  assign get_id_2 = (op == `ojalr || op == `ori) ? 0 : rs2;
-
-  assign rs_iQi = !get_has_dep_1;
-  assign rs_Qi = get_dep_1;
-  assign rs_Vi = get_val_1;
-  assign rs_iQj = !get_has_dep_2;
-  assign rs_Qj = get_dep_2;
-  assign rs_Vj = get_val_2;
-
-  assign lsb_iQi = !get_has_dep_1;
-  assign lsb_Qi = get_dep_1;
-  assign lsb_Vi = get_val_1;
-  assign lsb_iQj = !get_has_dep_2;
-  assign lsb_Qj = get_dep_2;
-  assign lsb_Vj = get_val_2;
+  assign get_id_2 = (op == `ojalr || op == `ori || op == `ol) ? 0 : rs2;
 
   assign rs_Qdest = rob_free_id;
   assign lsb_Qdest = rob_free_id;
@@ -117,6 +103,20 @@ module decode (
     else begin
       if (is_ins && ins_addr != last_addr) begin
         last_addr <= ins_addr;
+
+        rs_iQi <= !get_has_dep_1;
+        rs_Qi <= get_dep_1;
+        rs_Vi <= get_val_1;
+        rs_iQj <= !get_has_dep_2;
+        rs_Qj <= get_dep_2;
+        rs_Vj <= get_val_2;
+
+        lsb_iQi <= !get_has_dep_1;
+        lsb_Qi <= get_dep_1;
+        lsb_Vi <= get_val_1;
+        lsb_iQj <= !get_has_dep_2;
+        lsb_Qj <= get_dep_2;
+        lsb_Vj <= get_val_2;
 
         is_rs <= to_rs;
         rs_pc <= ins_addr;

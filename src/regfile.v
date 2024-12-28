@@ -42,8 +42,8 @@ module regfile (
   reg [`ROB_R] DEP[0:31];
 
   // bind values
-  wire has_dep_1 = BUSY[get_id_1] || set_dep_id && set_dep_id == get_id_1; // new dependencies!
-  wire has_dep_2 = BUSY[get_id_2] || set_dep_id && set_dep_id == get_id_2;
+  wire has_dep_1 = BUSY[get_id_1] || (set_dep_id && set_dep_id == get_id_1); // new dependencies!
+  wire has_dep_2 = BUSY[get_id_2] || (set_dep_id && set_dep_id == get_id_2);
   assign get_val_1 = has_dep_1 ? rob_val_1 : REGS[get_id_1];
   assign get_val_2 = has_dep_2 ? rob_val_2 : REGS[get_id_2];
   assign get_has_dep_1 = has_dep_1 && !rob_avail_1;
@@ -70,6 +70,14 @@ module regfile (
       end
     end
     else begin
+      // if (set_id) begin
+      //   for (i = 0; i < 16; i = i + 1) begin
+      //     $write("|%0x", REGS[i]);
+      //   end
+      //   $display("");
+      // end
+      // $display("%x|%x", set_dep_id, set_dep_Q);
+      // $display("%x:%x %x!", 2, DEP[2], REGS[2]);
       if (set_id) begin
         REGS[set_id] <= set_val;
         if (set_dep_id != set_id && DEP[set_id] == set_from_rob_id) begin

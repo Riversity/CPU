@@ -68,7 +68,7 @@ module rs (
                            exec[12] ? 12 : exec[13] ? 13 : exec[14] ? 14 : exec[15] ? 15 : 16;
   assign rs_full = first_empty == `RS;
   wire is_work = first_avail != `RS;
-  wire [3:0] pos = first_avail;
+  wire [3:0] pos = first_avail[3:0];
 
   alu calc (
     .clk_in(clk_in),
@@ -95,6 +95,10 @@ module rs (
     end
     else if (!rdy_in) begin end
     else begin
+      // for (i = 0; i < `RS; i = i + 1) begin
+      //   if (busy[i])
+      //   $display("%x: %x|%x %x|%x", pc[i], iQ1[i], Q1[i], iQ2[i], Q2[i]);
+      // end
       // insert
       if (is_dc) begin // guaranteed !rs_full
         busy[first_empty] <= 1;

@@ -95,7 +95,7 @@ module rob (
   assign set_from_rob_id = head;
   assign set_val = val[head];
   // set dep
-  wire is_set_dep = is_ins && ins_type[1];
+  wire is_set_dep = rdy_in && is_ins && ins_type[0];
   assign set_dep_id = is_set_dep ? ins_rd : 0;
   assign set_dep_Q = tail;
   // set decoder new value through regfile
@@ -147,6 +147,7 @@ module rob (
       end
       // commit
       if (busy[head] && stat[head]) begin
+        $display("%x", pc[head]);
         head <= nx_head;
         busy[head] <= 0;
         stat[head] <= 0;
