@@ -51,17 +51,17 @@ module lsb (
   // wire [`LSB_R] nx_head = head + 1;
   // wire [`LSB_R] nx_tail = tail + 1;
 
-  assign lsb_full = size + 1 >= `LSB;
+  assign lsb_full = size + 2 >= `LSB;
 
-  reg [9:0]    op  [`RS_A];
-  reg [31:0]   imm [`RS_A];
-  reg          iQ1 [`RS_A]; // iQ == 1 <=> Q == -1 <=> no dependency
-  reg [`ROB_R] Q1  [`RS_A];
-  reg          iQ2 [`RS_A]; // iQ == 1 <=> Q == -1 <=> no dependency
-  reg [`ROB_R] Q2  [`RS_A];
-  reg [31:0]   V1  [`RS_A];
-  reg [31:0]   V2  [`RS_A];
-  reg [`ROB_R] Qdes[`RS_A];
+  reg [9:0]    op  [`LSB_A];
+  reg [31:0]   imm [`LSB_A];
+  reg          iQ1 [`LSB_A]; // iQ == 1 <=> Q == -1 <=> no dependency
+  reg [`ROB_R] Q1  [`LSB_A];
+  reg          iQ2 [`LSB_A]; // iQ == 1 <=> Q == -1 <=> no dependency
+  reg [`ROB_R] Q2  [`LSB_A];
+  reg [31:0]   V1  [`LSB_A];
+  reg [31:0]   V2  [`LSB_A];
+  reg [`ROB_R] Qdes[`LSB_A];
 
   reg working;
   assign is_io = working;
@@ -119,6 +119,7 @@ module lsb (
         end
       end
       // work
+      // $display("head:%0x size:%0x wo:%0x ms:%0x iqi:%0x iqj:%0x addr:%0x rhi:%0x qdes:%0x", head, size, working, mem_stuck, iQ1[head], iQ2[head], tmp_addr, rob_head_id, Qdes[head]);
       if (size != 0 && working == 0 && !mem_stuck && iQ1[head] && iQ2[head] && ((op[head][6:0] == `ol && tmp_addr != 32'h30000 && tmp_addr != 32'h30004) || (rob_head_id == Qdes[head]))) begin
         working <= 1;
         is_store <= op[head][6:0] == `os;

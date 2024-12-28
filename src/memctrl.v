@@ -41,7 +41,7 @@ module memctrl (
   assign is_back = busy && stat[1] && (cur == 0);
   assign back_ins = {data[31:8], read};
   assign mem_res_avail = busy && (!stat[1]) && (cur == 0);
-  assign mem_res = io_op == 3'b000 ? {{24{read[7]}}, read} : (io_op == 3'b001 ? {{16{data[15]}}, data[15:8], read} : {data[31:8], read});
+  assign mem_res = io_op == 3'b000 ? {{24{read[7]}}, read} : io_op == 3'b001 ? {{16{data[15]}}, data[15:8], read} : io_op == 3'b100 ? {{24'b0}, read} : io_op == 3'b101 ? {{16'b0}, data[15:8], read} : {data[31:8], read};
   // sign extension
 
   always @(posedge clk_in) begin : MEMCTRL
