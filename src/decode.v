@@ -77,18 +77,21 @@ module decode (
   wire [4:0] rs2 = ins[24:20];
   wire [31:0] immIext = {{20{ins[31]}}, ins[31:20]};
   wire [31:0] immSext = {{20{ins[31]}}, ins[31:25], ins[11:7]};
-  wire [31:0] immBext = {{20{ins[31]}}, ins[7], ins[30:25], ins[11:8], 1'b0};
+  // wire [31:0] immBext = {{20{ins[31]}}, ins[7], ins[30:25], ins[11:8], 1'b0}; // offset
+  wire [31:0] immJext = {{12{ins[31]}}, ins[19:12], ins[20], ins[30:21], 1'b0};
   wire [31:0] immUext = {ins[31:12], 12'b0};
 
   // instant wire to regfile
-  assign get_id_1 = rs1;
-  assign get_id_2 = (op == `ojalr || op == `ori || op == `ol) ? 0 : rs2;
+  assign get_id_1 = (op == `oauipc || op == `olui || op == `ojal) ? 0 : rs1;
+  assign get_id_2 = (op == `oauipc || op == `olui || op == `ojal
+                  || op == `ojalr || op == `ori || op == `ol) ? 0 : rs2;
 
   assign rs_Qdest = rob_free_id;
   assign lsb_Qdest = rob_free_id;
 
-  wire to_rs = op == `ojalr || op == `ob || op == `ori || op == `orr;
+  // wire to_rs = op == `ojalr || op == `ob || op == `ori || op == `orr || op == `oauipc || op == `olui || op == `ojal;
   wire to_lsb = op == `os || op == `ol;
+  wire to_rs = !to_lsb;
 
   reg [31:0] last_addr;
 
@@ -121,7 +124,7 @@ module decode (
         is_rs <= to_rs;
         rs_pc <= ins_addr;
         rs_op <= {ins[30], ins[14:12], ins[6:0]};
-        rs_imm <= immIext;
+        rs_imm <= (op == `oauipc || op == `olui) ? immUext : op == `ojal ? immJext : immIext;
         // slli etc. is handled in alu
         // `orr, `ob have no imm
         // `ojalr is also this
@@ -134,7 +137,7 @@ module decode (
         r_ins_pc <= ins_addr;
         r_ins_already_done <= op == `ojal || op == `ojalr
                            || op == `oauipc || op == `olui;
-        // the done here just mean value to be in register is ready
+        // corresponding to stat in rob
         r_ins_result <= op == `olui ? immUext : op == `oauipc ? immUext + ins_addr : ins_addr + 4;
         r_ins_rd <= rd;
         r_ins_pred_jmp <= pred_jmp;
