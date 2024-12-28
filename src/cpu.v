@@ -84,7 +84,7 @@ regfile RegFile (
 
 // rob & decoder
 wire is_r_ins;
-wire [31:0] r_ins;
+// wire [31:0] r_ins;
 wire [31:0] r_ins_pc;
 wire r_ins_already_done;
 wire [31:0] r_ins_result;
@@ -95,15 +95,15 @@ wire [1:0] r_ins_type;
 wire [`ROB_R] rob_free_id;
 
 // rob & lsb
-output wire [`ROB_R] rob_head_id;
-input wire lsb_has_output;
-input wire [`ROB_R] lsb_rob_id;
-input wire [31:0] lsb_output;
+wire [`ROB_R] rob_head_id;
+wire lsb_has_output;
+wire [`ROB_R] lsb_rob_id;
+wire [31:0] lsb_output;
 
 // rob & rs
-input wire rs_has_output;
-input wire [`ROB_R] rs_rob_id;
-input wire [31:0] rs_output;
+wire rs_has_output;
+wire [`ROB_R] rs_rob_id;
+wire [31:0] rs_output;
 
 // rob & insfetch
 wire [31:0] rob_new_pc;
@@ -120,7 +120,7 @@ rob RoB (
   .rob_full(rob_full),
   .new_pc(rob_new_pc),
   .is_ins(is_r_ins),
-  .ins(r_ins),
+  // .ins(r_ins),
   .ins_pc(r_ins_pc),
   .ins_already_done(r_ins_already_done),
   .ins_result(r_ins_result),
@@ -318,7 +318,7 @@ decode Decode (
   .rob_clear(rob_clear),
   .rob_free_id(rob_free_id),
   .r_is_ins(is_r_ins),
-  .r_ins(r_ins),
+  // .r_ins(r_ins),
   .r_ins_pc(r_ins_pc),
   .r_ins_already_done(r_ins_already_done),
   .r_ins_result(r_ins_result),

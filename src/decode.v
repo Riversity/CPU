@@ -59,7 +59,7 @@ module decode (
   input wire rob_clear,
   input wire [`ROB_R] rob_free_id,
   output reg r_is_ins,
-  output reg [31:0] r_ins,
+  // output reg [31:0] r_ins,
   output reg [31:0] r_ins_pc,
   output reg r_ins_already_done, // jal jalr auipc lui
   output reg [31:0] r_ins_result, // jal jalr auipc lui
@@ -82,19 +82,19 @@ module decode (
 
   // instant wire to regfile
   assign get_id_1 = rs1;
-  assign get_id_2 = rs2;
+  assign get_id_2 = (op == `ojalr || op == `ori) ? 0 : rs2;
 
-  assign rs_iQi = get_has_dep_1;
+  assign rs_iQi = !get_has_dep_1;
   assign rs_Qi = get_dep_1;
   assign rs_Vi = get_val_1;
-  assign rs_iQj = get_has_dep_2;
+  assign rs_iQj = !get_has_dep_2;
   assign rs_Qj = get_dep_2;
   assign rs_Vj = get_val_2;
 
-  assign lsb_iQi = get_has_dep_1;
+  assign lsb_iQi = !get_has_dep_1;
   assign lsb_Qi = get_dep_1;
   assign lsb_Vi = get_val_1;
-  assign lsb_iQj = get_has_dep_2;
+  assign lsb_iQj = !get_has_dep_2;
   assign lsb_Qj = get_dep_2;
   assign lsb_Vj = get_val_2;
 
@@ -133,8 +133,7 @@ module decode (
         r_is_ins <= 1;
         r_ins_pc <= ins_addr;
         r_ins_already_done <= op == `ojal || op == `ojalr
-                           || op == `oauipc || op == `olui
-                           || op == `os;
+                           || op == `oauipc || op == `olui;
         // the done here just mean value to be in register is ready
         r_ins_result <= op == `olui ? immUext : op == `oauipc ? immUext + ins_addr : ins_addr + 4;
         r_ins_rd <= rd;

@@ -53,7 +53,7 @@ module lsb (
 
   assign lsb_full = size + 1 >= `LSB;
 
-  reg [10:0]   op  [`RS_A];
+  reg [9:0]    op  [`RS_A];
   reg [31:0]   imm [`RS_A];
   reg          iQ1 [`RS_A]; // iQ == 1 <=> Q == -1 <=> no dependency
   reg [`ROB_R] Q1  [`RS_A];
@@ -76,12 +76,12 @@ module lsb (
   always @(posedge clk_in) begin : LSB
     integer i;
     if (rst_in || rob_clear) begin
-      for (i = 0; i < `LSB; i = i + 1) begin
-        head <= 0;
-        tail <= 0;
-        size <= 0;
-        working <= 0;
-      end
+      head <= 0;
+      tail <= 0;
+      size <= 0;
+      working <= 0;
+      // for (i = 0; i < `LSB; i = i + 1) begin
+      // end
     end
     else if (!rdy_in) begin end
     else begin
@@ -97,9 +97,10 @@ module lsb (
         V2[tail] <= dc_iQj ? dc_Vj : (lsb_has_output && lsb_rob_id == dc_Qj) ? lsb_output : (is_rs && rs_rob_id == dc_Qj) ? rs_res : {32{1'bx}};
         Qdes[tail] <= dc_Qdest;
         tail <= tail + 1;
+        size <= size + 1;
       end
       // update
-      for (i = head; i != tail; i = (i + 1) % `LSB) begin
+      for (i = 0; i < `LSB; i = i + 1) begin
         if (lsb_has_output && !iQ1[i] && lsb_rob_id == Q1[i]) begin
           iQ1[i] <= 1;
           V1[i] <= lsb_output;
@@ -118,7 +119,7 @@ module lsb (
         end
       end
       // work
-      if (size != 0 && working == 0 && !mem_stuck && iQ1[head] && iQ2[head] && ((op[head][6:0] == `ol && tmp_addr != 32'h30000 && tmp_addr != 32'h30004) || (!rob_empty && rob_head_id == Qdes[head]))) begin
+      if (size != 0 && working == 0 && !mem_stuck && iQ1[head] && iQ2[head] && ((op[head][6:0] == `ol && tmp_addr != 32'h30000 && tmp_addr != 32'h30004) || (rob_head_id == Qdes[head]))) begin
         working <= 1;
         is_store <= op[head][6:0] == `os;
         io_addr <= tmp_addr;
@@ -128,6 +129,7 @@ module lsb (
       // free
       if (mem_res_avail) begin
         head <= head + 1;
+        size <= size - 1;
         working <= 0;
       end
     end

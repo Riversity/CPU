@@ -13,7 +13,7 @@ module rob (
 
   // from decoder
   input wire is_ins,
-  input wire [31:0] ins,
+  // input wire [31:0] ins,
   input wire [31:0] ins_pc,
   // input wire [31:0] ins_pred_pc,
   input wire ins_already_done, // jal jalr auipc lui
@@ -69,7 +69,7 @@ module rob (
   reg [31:0] val[`ROB_A];
   reg [4:0] rd[`ROB_A];
   reg pred_jmp[`ROB_A];
-  reg another_br[`ROB_A]; // either from jalr or from decoder branch
+  reg [31:0] another_br[`ROB_A]; // either from jalr or from decoder branch
   reg [31:0] pc[`ROB_A];
 
   reg [`ROB_R] head;
@@ -112,7 +112,7 @@ module rob (
       new_pc <= 0;
       head <= 0;
       tail <= 0;
-      for (i = 0; i < `ROB; ++i) begin
+      for (i = 0; i < `ROB; i = i + 1) begin
         busy[i] <= 0;
         stat[i] <= 0;
         type[i] <= 0;
@@ -159,7 +159,7 @@ module rob (
           if (val[head][0] != pred_jmp[head]) begin
             // bad pred
             rob_clear <= 1;
-            new_pc <= another_addr[head];
+            new_pc <= another_br[head];
           end
         end
       end
