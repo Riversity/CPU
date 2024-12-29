@@ -34,7 +34,9 @@ module regfile (
   input wire    [31:0] rob_val_1,
   output wire [`ROB_R] get_rob_id_2,
   input wire           rob_avail_2,
-  input wire    [31:0] rob_val_2
+  input wire    [31:0] rob_val_2,
+
+  input wire is_commit
 );
 
   reg [31:0]  REGS[0:31];
@@ -70,7 +72,7 @@ module regfile (
       end
     end
     else begin
-      // if (set_id) begin
+      // if (is_commit) begin
       //   for (i = 0; i < 16; i = i + 1) begin
       //     $write("|%0x", REGS[i]);
       //   end

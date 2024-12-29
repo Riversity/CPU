@@ -41,6 +41,8 @@ wire [`ROB_R] get_rob_id_2;
 wire          rob_avail_2;
 wire   [31:0] rob_val_2;
 
+wire is_commit;
+
 // regfile & decode
 wire    [4:0] get_id_1;
 wire   [31:0] get_val_1;
@@ -79,7 +81,8 @@ regfile RegFile (
   .rob_val_1(rob_val_1),
   .get_rob_id_2(get_rob_id_2),
   .rob_avail_2(rob_avail_2),
-  .rob_val_2(rob_val_2)
+  .rob_val_2(rob_val_2),
+  .is_commit(is_commit)
 );
 
 // rob & decoder
@@ -149,7 +152,8 @@ rob RoB (
   .rob_val_2(rob_val_2),
   .is_b_res(is_b_res),
   .b_res_pc_part(b_res_pc_part),
-  .b_res_jmp(b_res_jmp)
+  .b_res_jmp(b_res_jmp),
+  .is_commit(is_commit)
 );
 
 // mem & inscache

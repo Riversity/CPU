@@ -66,7 +66,9 @@ module rs (
                            exec[4] ? 4 : exec[5] ? 5 : exec[6] ? 6 : exec[7] ? 7 :
                            exec[8] ? 8 : exec[9] ? 9 : exec[10] ? 10 : exec[11] ? 11 :
                            exec[12] ? 12 : exec[13] ? 13 : exec[14] ? 14 : exec[15] ? 15 : 16;
-  assign rs_full = first_empty == `RS;
+  reg [4:0] size;
+  // assign rs_full = first_empty == `RS;
+  assign rs_full = size + 2 >= `RS;
   wire is_work = first_avail != `RS;
   wire [3:0] pos = first_avail[3:0];
 
@@ -89,6 +91,7 @@ module rs (
   always @(posedge clk_in) begin : RS
     integer i;
     if (rst_in || rob_clear) begin
+      size <= 0;
       for (i = 0; i < `RS; i = i + 1) begin
         busy[i] <= 0;
       end
@@ -100,7 +103,8 @@ module rs (
       //   $display("%x: %x|%x %x|%x", pc[i], iQ1[i], Q1[i], iQ2[i], Q2[i]);
       // end
       // insert
-      if (is_dc) begin // guaranteed !rs_full
+      if (is_dc) begin // guaranteed !rs_full?
+        if (first_empty == `RS) $display("rs ficked!");
         busy[first_empty] <= 1;
         pc[first_empty] <= dc_pc;
         op[first_empty] <= dc_op;
@@ -137,6 +141,13 @@ module rs (
       end
       // free
       if (is_work) busy[pos] <= 0;
+
+      if (is_dc && !is_work) begin
+        size <= size + 1;
+      end
+      else if (!is_dc && is_work) begin
+        size <= size - 1;
+      end
     end
   end
 endmodule

@@ -51,7 +51,7 @@ module lsb (
   // wire [`LSB_R] nx_head = head + 1;
   // wire [`LSB_R] nx_tail = tail + 1;
 
-  assign lsb_full = size + 2 >= `LSB;
+  assign lsb_full = size + 3 >= `LSB;
 
   reg [9:0]    op  [`LSB_A];
   reg [31:0]   imm [`LSB_A];
@@ -87,6 +87,7 @@ module lsb (
     else begin
       // insert
       if (is_dc) begin
+        if ((tail + 1) % `LSB == head) $display("lsb fucked!");
         op[tail] <= dc_op;
         imm[tail] <= dc_imm;
         Q1[tail] <= dc_Qi;
@@ -97,7 +98,6 @@ module lsb (
         V2[tail] <= dc_iQj ? dc_Vj : (lsb_has_output && lsb_rob_id == dc_Qj) ? lsb_output : (is_rs && rs_rob_id == dc_Qj) ? rs_res : {32{1'bx}};
         Qdes[tail] <= dc_Qdest;
         tail <= tail + 1;
-        size <= size + 1;
       end
       // update
       for (i = 0; i < `LSB; i = i + 1) begin
@@ -130,8 +130,13 @@ module lsb (
       // free
       if (mem_res_avail) begin
         head <= head + 1;
-        size <= size - 1;
         working <= 0;
+      end
+      if (is_dc && !mem_res_avail) begin
+        size <= size + 1;
+      end
+      else if (!is_dc && mem_res_avail) begin
+        size <= size - 1;
       end
     end
   end

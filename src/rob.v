@@ -37,6 +37,7 @@ module rob (
   input wire [31:0] rs_output,
 
   // to regfile
+  output wire is_commit,
   output wire [4:0] set_id,
   output wire [31:0] set_val,
   output wire [`ROB_R] set_from_rob_id,
@@ -78,7 +79,7 @@ module rob (
   wire [`ROB_R] nx_tail = tail + 1;
   wire [`ROB_R] nx_nx_tail = nx_tail + 1;
   assign rob_empty = head == tail;
-  assign rob_full = nx_tail == head || nx_nx_tail  == head;
+  assign rob_full = nx_tail == head || nx_nx_tail  == head || (nx_nx_tail + 1) % `ROB == head;
 
   assign rob_head_id = head;
   assign rob_free_id = tail;
@@ -88,10 +89,11 @@ module rob (
   assign b_res_jmp = pred_jmp[head];
 
   // to regfile
+  assign is_commit = rdy_in && busy[head] && stat[head];
   // set value
-  wire is_commit = rdy_in && busy[head] && stat[head] && type[head][0];
+  wire is_change_reg = is_commit && type[head][0];
   // type[head][0] is a goofy shorthand for (type == R or J)
-  assign set_id = is_commit ? rd[head] : 0;
+  assign set_id = is_change_reg ? rd[head] : 0;
   assign set_from_rob_id = head;
   assign set_val = val[head];
   // set dep
@@ -135,6 +137,7 @@ module rob (
       end
       // issue
       if (is_ins) begin
+        if (busy[head] && tail == head) $display("rob facked!");
         tail <= nx_tail;
         busy[tail] <= 1;
         stat[tail] <= ins_already_done;
@@ -146,8 +149,8 @@ module rob (
         pc[tail] <= ins_pc;
       end
       // commit
-      if (busy[head] && stat[head]) begin
-        $display("%x", pc[head]);
+      if (is_commit) begin
+        // $display("%0x", pc[head]);
         head <= nx_head;
         busy[head] <= 0;
         stat[head] <= 0;
