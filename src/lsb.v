@@ -22,7 +22,7 @@ module lsb (
   input wire [31:0]   dc_Vi,
   input wire [31:0]   dc_Vj,
 
-  output wire lsb_full,
+  output reg lsb_full,
 
   // from mem
   input wire mem_res_avail,
@@ -48,10 +48,10 @@ module lsb (
   reg [`LSB_R] head;
   reg [`LSB_R] tail;
   reg [`LSB_BIT:0] size;
+  wire [`LSB_BIT:0] nx_size = (is_dc && !(working && mem_res_avail)) ? size + 1 : (!is_dc && working && mem_res_avail) ? size - 1 : size;
+  wire nx_full = nx_size == `LSB || nx_size + 1 == `LSB;
   // wire [`LSB_R] nx_head = head + 1;
   // wire [`LSB_R] nx_tail = tail + 1;
-
-  assign lsb_full = size + 3 >= `LSB;
 
   reg [9:0]    op  [`LSB_A];
   reg [31:0]   imm [`LSB_A];
@@ -80,14 +80,17 @@ module lsb (
       tail <= 0;
       size <= 0;
       working <= 0;
+      lsb_full <= 0;
       // for (i = 0; i < `LSB; i = i + 1) begin
       // end
     end
     else if (!rdy_in) begin end
     else begin
+      size <= nx_size;
+      lsb_full <= nx_full;
       // insert
       if (is_dc) begin
-        if ((tail + 1) % `LSB == head) $display("lsb fucked!");
+        if (size > 0 && tail == head) $display("lsb fucked! size: %0x", size);
         op[tail] <= dc_op;
         imm[tail] <= dc_imm;
         Q1[tail] <= dc_Qi;
@@ -101,21 +104,23 @@ module lsb (
       end
       // update
       for (i = 0; i < `LSB; i = i + 1) begin
-        if (lsb_has_output && !iQ1[i] && lsb_rob_id == Q1[i]) begin
-          iQ1[i] <= 1;
-          V1[i] <= lsb_output;
-        end
-        if (lsb_has_output && !iQ2[i] && lsb_rob_id == Q2[i]) begin
-          iQ2[i] <= 1;
-          V2[i] <= lsb_output;
-        end
-        if (is_rs && !iQ1[i] && rs_rob_id == Q1[i]) begin
-          iQ1[i] <= 1;
-          V1[i] <= rs_res;
-        end
-        if (is_rs && !iQ2[i] && rs_rob_id == Q2[i]) begin
-          iQ2[i] <= 1;
-          V2[i] <= rs_res;
+        if (!(is_dc && i == tail)) begin
+          if (lsb_has_output && !iQ1[i] && lsb_rob_id == Q1[i]) begin
+            iQ1[i] <= 1;
+            V1[i] <= lsb_output;
+          end
+          if (lsb_has_output && !iQ2[i] && lsb_rob_id == Q2[i]) begin
+            iQ2[i] <= 1;
+            V2[i] <= lsb_output;
+          end
+          if (is_rs && !iQ1[i] && rs_rob_id == Q1[i]) begin
+            iQ1[i] <= 1;
+            V1[i] <= rs_res;
+          end
+          if (is_rs && !iQ2[i] && rs_rob_id == Q2[i]) begin
+            iQ2[i] <= 1;
+            V2[i] <= rs_res;
+          end
         end
       end
       // work
@@ -128,15 +133,9 @@ module lsb (
         io_op <= op[head][9:7];
       end
       // free
-      if (mem_res_avail) begin
+      if (working && mem_res_avail) begin // caution: rob_clear while working
         head <= head + 1;
         working <= 0;
-      end
-      if (is_dc && !mem_res_avail) begin
-        size <= size + 1;
-      end
-      else if (!is_dc && mem_res_avail) begin
-        size <= size - 1;
       end
     end
   end

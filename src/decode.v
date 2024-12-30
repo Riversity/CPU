@@ -104,7 +104,7 @@ module decode (
     end
     else if (!rdy_in) begin end
     else begin
-      if (is_ins && ins_addr != last_addr) begin
+      if (is_ins && ins_addr != last_addr && !f_stall) begin
         last_addr <= ins_addr;
 
         rs_iQi <= !get_has_dep_1;

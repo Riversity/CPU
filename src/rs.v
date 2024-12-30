@@ -22,7 +22,7 @@ module rs (
   input wire [31:0]   dc_Vi,
   input wire [31:0]   dc_Vj,
 
-  output wire rs_full,
+  output reg rs_full,
 
   // from lsb, update Q
   input wire is_lsb,
@@ -67,9 +67,11 @@ module rs (
                            exec[8] ? 8 : exec[9] ? 9 : exec[10] ? 10 : exec[11] ? 11 :
                            exec[12] ? 12 : exec[13] ? 13 : exec[14] ? 14 : exec[15] ? 15 : 16;
   reg [4:0] size;
+  wire [4:0] nx_size = (is_dc && !is_work) ? size + 1 : (!is_dc && is_work) ? size - 1 : size;
   // assign rs_full = first_empty == `RS;
-  assign rs_full = size + 2 >= `RS;
-  wire is_work = first_avail != `RS;
+  // assign rs_full = size + 2 >= `RS;
+  wire nx_full = nx_size + 1 == `RS || nx_size == `RS;
+  wire is_work = first_avail != `RS && !rst_in && !rob_clear;
   wire [3:0] pos = first_avail[3:0];
 
   alu calc (
@@ -92,19 +94,22 @@ module rs (
     integer i;
     if (rst_in || rob_clear) begin
       size <= 0;
+      rs_full <= 0;
       for (i = 0; i < `RS; i = i + 1) begin
         busy[i] <= 0;
       end
     end
     else if (!rdy_in) begin end
     else begin
+      size <= nx_size;
+      rs_full <= nx_full;
       // for (i = 0; i < `RS; i = i + 1) begin
       //   if (busy[i])
       //   $display("%x: %x|%x %x|%x", pc[i], iQ1[i], Q1[i], iQ2[i], Q2[i]);
       // end
       // insert
       if (is_dc) begin // guaranteed !rs_full?
-        if (first_empty == `RS) $display("rs ficked!");
+        if (first_empty == `RS) $display("rs ficked! size: %0x", size);
         busy[first_empty] <= 1;
         pc[first_empty] <= dc_pc;
         op[first_empty] <= dc_op;
@@ -141,13 +146,6 @@ module rs (
       end
       // free
       if (is_work) busy[pos] <= 0;
-
-      if (is_dc && !is_work) begin
-        size <= size + 1;
-      end
-      else if (!is_dc && is_work) begin
-        size <= size - 1;
-      end
     end
   end
 endmodule

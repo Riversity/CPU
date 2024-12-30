@@ -78,8 +78,8 @@ module rob (
   wire [`ROB_R] nx_head = head + 1;
   wire [`ROB_R] nx_tail = tail + 1;
   wire [`ROB_R] nx_nx_tail = nx_tail + 1;
-  assign rob_empty = head == tail;
-  assign rob_full = nx_tail == head || nx_nx_tail  == head || (nx_nx_tail + 1) % `ROB == head;
+  assign rob_empty = head == tail && !busy[head];
+  assign rob_full = (tail == head && busy[head]) || nx_tail == head || nx_nx_tail  == head || (nx_nx_tail + 1) % `ROB == head;
 
   assign rob_head_id = head;
   assign rob_free_id = tail;

@@ -41,7 +41,7 @@ module memctrl (
   assign is_back = busy && stat[1] && (cur == 0);
   assign back_ins = {data[31:8], read};
   assign mem_res_avail = busy && (!stat[1]) && (cur == 0);
-  assign mem_res = io_op == 3'b000 ? {{24{read[7]}}, read} : io_op == 3'b001 ? {{16{data[15]}}, data[15:8], read} : io_op == 3'b100 ? {{24'b0}, read} : io_op == 3'b101 ? {{16'b0}, data[15:8], read} : {data[31:8], read};
+  assign mem_res = io_op == 3'b000 ? {{24{read[7]}}, read} : io_op == 3'b001 ? {{16{data[15]}}, data[15:8], read} : io_op == 3'b100 ? {{24{1'b0}}, read} : io_op == 3'b101 ? {{16{1'b0}}, data[15:8], read} : {data[31:8], read};
   // sign extension
 
   always @(posedge clk_in) begin : MEMCTRL
@@ -65,7 +65,7 @@ module memctrl (
             is_write <= 1;
             case (io_op[1:0])
               2'b00: begin cur <= 0; addr <= io_addr; write <= io_data[7:0]; end
-              2'b01: begin cur <= 1; addr <= io_addr + 2; write <= io_data[15:8]; end
+              2'b01: begin cur <= 1; addr <= io_addr + 1; write <= io_data[15:8]; end
               2'b10: begin cur <= 3; addr <= io_addr + 3; write <= io_data[31:24]; end
             endcase
           end
@@ -73,7 +73,7 @@ module memctrl (
             is_write <= 0;
             case (io_op[1:0])
               2'b00: begin cur <= 1; addr <= io_addr; end
-              2'b01: begin cur <= 2; addr <= io_addr + 2; end
+              2'b01: begin cur <= 2; addr <= io_addr + 1; end
               2'b10: begin cur <= 4; addr <= io_addr + 3; end
             endcase
           end
