@@ -61,8 +61,8 @@ module decode (
   output reg r_is_ins,
   // output reg [31:0] r_ins,
   output reg [31:0] r_ins_pc,
-  output reg r_ins_already_done, // jal jalr auipc lui
-  output reg [31:0] r_ins_result, // jal jalr auipc lui
+  // output reg r_ins_already_done, // jal jalr auipc lui
+  // output reg [31:0] r_ins_result, // jal jalr auipc lui
   output reg [4:0] r_ins_rd,
   output reg r_ins_pred_jmp,
   output reg [31:0] r_another_addr, // br, different from predicted
@@ -138,8 +138,7 @@ module decode (
         // r_ins_already_done <= op == `ojal || op == `ojalr
         //                    || op == `oauipc || op == `olui;
         // corresponding to stat in rob
-        // r_ins_result <= op == `olui ? immUext : op == `oauipc ? immUext + ins_addr : ins_addr + 4;
-        r_ins_already_done <= 0;
+        // r_ins_already_done <= 0;
         r_ins_rd <= rd;
         r_ins_pred_jmp <= pred_jmp;
         r_another_addr <= pred_another;

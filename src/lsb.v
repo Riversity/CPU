@@ -90,7 +90,7 @@ module lsb (
       lsb_full <= nx_full;
       // insert
       if (is_dc) begin
-        if (size > 0 && tail == head) $display("lsb fucked! size: %0x", size);
+        // if (size > 0 && tail == head) $display("lsb fucked! size: %0x", size);
         op[tail] <= dc_op;
         imm[tail] <= dc_imm;
         Q1[tail] <= dc_Qi;

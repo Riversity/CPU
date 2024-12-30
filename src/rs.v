@@ -109,7 +109,7 @@ module rs (
       // end
       // insert
       if (is_dc) begin // guaranteed !rs_full?
-        if (first_empty == `RS) $display("rs ficked! size: %0x", size);
+        // if (first_empty == `RS) $display("rs ficked! size: %0x", size);
         busy[first_empty] <= 1;
         pc[first_empty] <= dc_pc;
         op[first_empty] <= dc_op;

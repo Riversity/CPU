@@ -73,7 +73,7 @@ module regfile (
     end
     else begin
       // if (is_commit) begin
-      //   for (i = 0; i < 16; i = i + 1) begin
+      //   for (i = 0; i < 32; i = i + 1) begin
       //     $write("|%0x", REGS[i]);
       //   end
       //   $display("");

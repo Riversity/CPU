@@ -16,8 +16,8 @@ module rob (
   // input wire [31:0] ins,
   input wire [31:0] ins_pc,
   // input wire [31:0] ins_pred_pc,
-  input wire ins_already_done, // jal jalr auipc lui
-  input wire [31:0] ins_result, // jal jalr auipc lui
+  // input wire ins_already_done, // jal jalr auipc lui
+  // input wire [31:0] ins_result, // jal jalr auipc lui
   input wire [4:0] ins_rd,
   input wire ins_pred_jmp,
   input wire [31:0] another_addr, // br, different from predicted
@@ -79,7 +79,7 @@ module rob (
   wire [`ROB_R] nx_tail = tail + 1;
   wire [`ROB_R] nx_nx_tail = nx_tail + 1;
   assign rob_empty = head == tail && !busy[head];
-  assign rob_full = (tail == head && busy[head]) || nx_tail == head || nx_nx_tail  == head || (nx_nx_tail + 1) % `ROB == head;
+  assign rob_full = (tail == head && busy[head]) || nx_tail == head || nx_nx_tail  == head;
 
   assign rob_head_id = head;
   assign rob_free_id = tail;
@@ -137,12 +137,12 @@ module rob (
       end
       // issue
       if (is_ins) begin
-        if (busy[head] && tail == head) $display("rob facked!");
+        // if (busy[head] && tail == head) $display("rob facked!");
         tail <= nx_tail;
         busy[tail] <= 1;
-        stat[tail] <= ins_already_done;
         type[tail] <= ins_type;
-        val[tail] <= ins_result;
+        // stat[tail] <= ins_already_done;
+        // val[tail] <= ins_result;
         rd[tail] <= ins_rd;
         pred_jmp[tail] <= ins_pred_jmp;
         another_br[tail] <= another_addr;
