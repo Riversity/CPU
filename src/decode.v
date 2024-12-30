@@ -135,10 +135,11 @@ module decode (
 
         r_is_ins <= 1;
         r_ins_pc <= ins_addr;
-        r_ins_already_done <= op == `ojal || op == `ojalr
-                           || op == `oauipc || op == `olui;
+        // r_ins_already_done <= op == `ojal || op == `ojalr
+        //                    || op == `oauipc || op == `olui;
         // corresponding to stat in rob
-        r_ins_result <= op == `olui ? immUext : op == `oauipc ? immUext + ins_addr : ins_addr + 4;
+        // r_ins_result <= op == `olui ? immUext : op == `oauipc ? immUext + ins_addr : ins_addr + 4;
+        r_ins_already_done <= 0;
         r_ins_rd <= rd;
         r_ins_pred_jmp <= pred_jmp;
         r_another_addr <= pred_another;

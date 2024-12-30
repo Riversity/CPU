@@ -21,6 +21,7 @@ module alu (
   always @(posedge clk_in) begin
     if (yes != 1) begin
       has_output <= 0;
+      has_new_pc <= 0;
     end
     else begin
       has_output <= 1;

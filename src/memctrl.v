@@ -28,7 +28,9 @@ module memctrl (
   output reg [31:0] addr,
   output reg is_write, // reversed from ram notation!
   output reg [7:0] write,
-  input wire [7:0] read
+  input wire [7:0] read,
+
+  input wire rob_clear
 );
 
   reg [31:0] data;
@@ -45,14 +47,14 @@ module memctrl (
   // sign extension
 
   always @(posedge clk_in) begin : MEMCTRL
-    if (rst_in) begin
+    if (rst_in || rob_clear) begin
       data <= 0;
       addr <= 0;
       is_write <= 0; // load
       write <= 0;
       busy <= 0;
       stat <= 0;
-      cur <= 3;
+      cur <= 4;
     end
     else if (!rdy_in) begin end
     else begin
@@ -97,6 +99,7 @@ module memctrl (
         if (cur == 0) begin
           busy <= 0;
           data <= 0;
+          addr <= 0;
           is_write <= 0;
           cur <= 4;
         end

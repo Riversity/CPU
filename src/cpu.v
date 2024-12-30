@@ -198,7 +198,8 @@ memctrl MemCtrl (
   .addr(mem_a),
   .is_write(mem_wr),
   .write(mem_dout),
-  .read(mem_din)
+  .read(mem_din),
+  .rob_clear(rob_clear)
 );
 
 inscache InsCache (
