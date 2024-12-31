@@ -95,9 +95,13 @@ module insfetch (
         else if (g_ins[6:0] == `ojal) begin
           PC <= PC + {{12{g_ins[31]}}, g_ins[19:12], g_ins[20], g_ins[30:21], 1'b0};
         end
+        if (g_ins[1:0] == 2'b01 && g_ins[14:13] == 2'b01) begin // c.j c.jal
+          PC <= PC + {{21{g_ins[12]}}, g_ins[8], g_ins[10:9], g_ins[6],
+                      g_ins[7], g_ins[2], g_ins[11], g_ins[5:3], 1'b0};
+        end
         else begin
-          PC <= pred ? da_jmp_PC : nu_jmp_PC;
           pred_jmp <= pred;
+          PC <= pred ? da_jmp_PC : nu_jmp_PC;
           another_branch <= (!pred) ? da_jmp_PC : nu_jmp_PC;
         end
       end

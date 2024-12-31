@@ -253,6 +253,7 @@ insfetch InsFetch (
 wire rs_full;
 wire is_rs;
 wire [31:0]   rs_pc;
+wire          rs_is_short;
 wire [10:0]   rs_op;
 wire [31:0]   rs_imm;
 wire          rs_iQi;
@@ -297,6 +298,7 @@ decode Decode (
   .rs_full(rs_full),
   .is_rs(is_rs),
   .rs_pc(rs_pc),
+  .rs_is_short(rs_is_short),
   .rs_op(rs_op),
   .rs_imm(rs_imm),
   .rs_iQi(rs_iQi),
@@ -338,6 +340,7 @@ rs RS (
   .rob_clear(rob_clear),
   .is_dc(is_rs),
   .dc_pc(rs_pc),
+  .dc_is_short(rs_is_short),
   .dc_op(rs_op),
   .dc_imm(rs_imm),
   .dc_iQi(rs_iQi),

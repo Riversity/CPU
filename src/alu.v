@@ -8,6 +8,7 @@ module alu (
   input wire [31:0] v1,
   input wire [31:0] v2,
   input wire [31:0] pc,
+  input wire is_short,
   input wire [31:0] imm,
   input wire [`ROB_R] in_rob_id,
 
@@ -30,8 +31,8 @@ module alu (
       case (op[6:0])
         `olui: value <= imm;
         `oauipc: value <= imm + pc;
-        `ojal: value <= pc + 4;
-        `ojalr: begin value <= pc + 4; new_pc <= (v1 + imm) & ~1; end
+        `ojal: value <= pc + is_short ? 2 : 4;
+        `ojalr: begin value <= pc + is_short ? 2 : 4; new_pc <= (v1 + imm) & ~1; end
         `ob: case (op[9:7])
           3'b000: value <= v1 == v2;
           3'b001: value <= v1 != v2;

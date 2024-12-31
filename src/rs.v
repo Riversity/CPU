@@ -12,6 +12,7 @@ module rs (
   // from decoder
   input wire is_dc,
   input wire [31:0]   dc_pc,
+  input wire          dc_is_short,
   input wire [10:0]   dc_op, // {ins[30], ins[14:12], ins[6:0]}
   input wire [31:0]   dc_imm,
   input wire          dc_iQi,
@@ -39,6 +40,7 @@ module rs (
 
   reg          busy[`RS_A];
   reg [31:0]   pc  [`RS_A];
+  reg          ish [`RS_A];
   reg [10:0]   op  [`RS_A];
   reg [31:0]   imm [`RS_A];
   reg          iQ1 [`RS_A]; // iQ == 1 <=> Q == -1 <=> no dependency
@@ -81,6 +83,7 @@ module rs (
     .v1(V1[pos]),
     .v2(V2[pos]),
     .pc(pc[pos]),
+    .is_short(ish[pos]),
     .imm(imm[pos]),
     .in_rob_id(Qdes[pos]),
     .has_output(rs_has_output),
@@ -112,6 +115,7 @@ module rs (
         // if (first_empty == `RS) $display("rs ficked! size: %0x", size);
         busy[first_empty] <= 1;
         pc[first_empty] <= dc_pc;
+        ish[first_empty] <= dc_is_short;
         op[first_empty] <= dc_op;
         imm[first_empty] <= dc_imm;
         Q1[first_empty] <= dc_Qi;
