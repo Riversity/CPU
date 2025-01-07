@@ -78,6 +78,7 @@ module rs (
 
   alu calc (
     .clk_in(clk_in),
+    .rst_in(rst_in),
     .yes(is_work),
     .op(op[pos]),
     .v1(V1[pos]),

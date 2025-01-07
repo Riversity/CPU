@@ -2,6 +2,7 @@
 `include "const.v"
 module alu (
   input wire clk_in,
+  input wire rst_in,
 
   input wire yes,
   input wire [10:0] op,
@@ -20,7 +21,7 @@ module alu (
 );
 
   always @(posedge clk_in) begin
-    if (yes != 1) begin
+    if (rst_in || yes != 1) begin
       has_output <= 0;
       has_new_pc <= 0;
     end

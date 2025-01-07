@@ -108,8 +108,24 @@ module rob (
 
   always @(posedge clk_in) begin : ROB
     integer i;
-    if (!rdy_in) begin end
-    else if (rst_in || rob_clear) begin
+    if (rst_in) begin
+      rob_clear <= 0;
+      new_pc <= 0;
+      head <= 0;
+      tail <= 0;
+      for (i = 0; i < `ROB; i = i + 1) begin
+        busy[i] <= 0;
+        stat[i] <= 0;
+        type[i] <= 0;
+        val[i] <= 0;
+        rd[i] <= 0;
+        pred_jmp[i] <= 0;
+        another_br[i] <= 0;
+        pc[i] <= 0;
+      end
+    end
+    else if (!rdy_in) begin end
+    else if (rob_clear) begin
       rob_clear <= 0;
       new_pc <= 0;
       head <= 0;
