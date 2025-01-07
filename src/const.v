@@ -1,4 +1,4 @@
-`define ROB_BIT 6
+`define ROB_BIT 5
 `define ROB (1 << `ROB_BIT)
 `define ROB_R `ROB_BIT-1:0
 `define ROB_A 0:`ROB-1

@@ -19,17 +19,17 @@ module inscache (
 );
 
   // addr is 17 bit long, last 1 bit is 0
-  // TAG 16:10, DATA & POS 9:1
-  reg [31:0] data[0:511];
-  reg [6:0] tag[0:511];
-  reg avail[0:511];
+  // TAG 16:9, DATA & POS 8:1
+  reg [31:0] data[0:255];
+  reg [7:0] tag[0:255];
+  reg avail[0:255];
 
   reg working;
 
-  wire [8:0] index = pc[9:1];
+  wire [7:0] index = pc[8:1];
   wire just_from_mem = is_mem_back && send_addr == pc;
 
-  assign is_ret = is_fetch && ((avail[index] && pc[16:10] == tag[index]) || just_from_mem);
+  assign is_ret = is_fetch && ((avail[index] && pc[16:9] == tag[index]) || just_from_mem);
   // hit or just from mem
   assign ret = just_from_mem ? back_ins : data[index];
 
@@ -39,7 +39,7 @@ module inscache (
       is_send_mem <= 0;
       send_addr <= 0;
       working <= 0;
-      for (i = 0; i < 512; i = i + 1) begin
+      for (i = 0; i < 256; i = i + 1) begin
         data[i] <= 0;
         tag[i] <= 0;
         avail[i] <= 0;
@@ -51,9 +51,9 @@ module inscache (
         if (is_mem_back) begin
           is_send_mem <= 0;
           working <= 0;
-          data[send_addr[9:1]] <= back_ins;
-          tag[send_addr[9:1]] <= send_addr[16:10];
-          avail[send_addr[9:1]] <= 1;
+          data[send_addr[8:1]] <= back_ins;
+          tag[send_addr[8:1]] <= send_addr[16:9];
+          avail[send_addr[8:1]] <= 1;
         end
       end
       else begin // mem not working
