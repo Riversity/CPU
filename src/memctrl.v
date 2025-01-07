@@ -40,9 +40,9 @@ module memctrl (
   reg [1:0] stat; // 00 load 01 store 10 ins
   reg [2:0] cur; // current position, 0, 1, 2, 3, 4 // because read is available 2 cycles later
 
-  assign is_back = busy && stat[1] && (cur == 0);
+  assign is_back = busy && stat[1] && (cur == 0) && rdy_in && !io_buffer_full;
   assign back_ins = {data[31:8], read};
-  assign mem_res_avail = busy && (!stat[1]) && (cur == 0);
+  assign mem_res_avail = busy && (!stat[1]) && (cur == 0) && rdy_in && !io_buffer_full;
   assign mem_res = io_op == 3'b000 ? {{24{read[7]}}, read} : io_op == 3'b001 ? {{16{data[15]}}, data[15:8], read} : io_op == 3'b100 ? {{24{1'b0}}, read} : io_op == 3'b101 ? {{16{1'b0}}, data[15:8], read} : {data[31:8], read};
   // sign extension
 
@@ -56,9 +56,9 @@ module memctrl (
       stat <= 0;
       cur <= 4;
     end
-    else if (!rdy_in) begin end
+    else if (!rdy_in || io_buffer_full) begin end
     else begin
-      if (!busy && !io_buffer_full) begin
+      if (!busy) begin
         if (is_io) begin // ls priority
           busy <= 1;
           stat <= {1'b0, is_store};
@@ -103,7 +103,7 @@ module memctrl (
           is_write <= 0;
           cur <= 4;
         end
-        else if (!io_buffer_full) begin
+        else begin
           cur <= cur - 1;
           if (stat[0]) begin // write
             case (cur)
