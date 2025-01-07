@@ -81,8 +81,17 @@ module lsb (
       size <= 0;
       working <= 0;
       lsb_full <= 0;
-      // for (i = 0; i < `LSB; i = i + 1) begin
-      // end
+      for (i = 0; i < `LSB; i = i + 1) begin
+        op[i] <= 0;
+        imm[i] <= 0;
+        iQ1[i] <= 1;
+        Q1[i] <= 0;
+        iQ2[i] <= 1;
+        Q2[i] <= 0;
+        V1[i] <= 0;
+        V2[i] <= 0;
+        Qdes[i] <= 0;
+      end
     end
     else if (!rdy_in) begin end
     else begin

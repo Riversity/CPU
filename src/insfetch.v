@@ -61,7 +61,7 @@ module insfetch (
       is_ins <= 0;
       ins_addr <= 0;
       ins <= 0;
-      for (i = 0; i < 255; i = i + 1) begin
+      for (i = 0; i < 256; i = i + 1) begin
         predictor[i] = 2'b10;
       end
     end

@@ -8,7 +8,7 @@
 `define RS_R `RS_BIT-1:0
 `define RS_A 0:`RS-1
 
-`define LSB_BIT 5
+`define LSB_BIT 4
 `define LSB (1 << `LSB_BIT)
 `define LSB_R `LSB_BIT-1:0
 `define LSB_A 0:`LSB-1
