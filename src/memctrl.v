@@ -26,7 +26,7 @@ module memctrl (
   // with ram
   input wire io_buffer_full, // todo
   output reg [31:0] addr,
-  output reg is_write, // reversed from ram notation!
+  output reg is_write,
   output reg [7:0] write,
   input wire [7:0] read,
 
@@ -46,6 +46,10 @@ module memctrl (
   assign mem_res = io_op == 3'b000 ? {{24{read[7]}}, read} : io_op == 3'b001 ? {{16{data[15]}}, data[15:8], read} : io_op == 3'b100 ? {{24{1'b0}}, read} : io_op == 3'b101 ? {{16{1'b0}}, data[15:8], read} : {data[31:8], read};
   // sign extension
 
+  reg is_tmp;
+  reg [31:0] tmp_addr;
+  reg [7:0] tmp_write;
+
   always @(posedge clk_in) begin : MEMCTRL
     if (rst_in || rob_clear) begin
       data <= 0;
@@ -55,14 +59,30 @@ module memctrl (
       busy <= 0;
       stat <= 0;
       cur <= 4;
+      is_tmp <= 0;
+      tmp_addr <= 0;
+      tmp_write <= 0;
     end
     else if (!rdy_in) begin end
     else begin
-      if (!busy) begin
+      if (is_tmp)  begin
+        if (!io_buffer_full) begin
+          is_write <= 1;
+          addr <= tmp_addr;
+          write <= tmp_write;
+          is_tmp <= 0;
+          tmp_addr <= 0;
+          tmp_write <= 0;
+        end
+      end
+      else if (!busy) begin
         if (io_buffer_full) begin
           addr <= 0;
           is_write <= 0;
           cur <= 4;
+          is_tmp <= is_write;
+          tmp_addr <= addr;
+          tmp_write <= write;
         end
         else if (is_io) begin // ls priority
           busy <= 1;
@@ -113,6 +133,9 @@ module memctrl (
             if (io_buffer_full) begin
               addr <= 0;
               is_write <= 0;
+              is_tmp <= is_write;
+              tmp_addr <= addr;
+              tmp_write <= write;
             end
             else begin
               cur <= cur - 1;

@@ -134,7 +134,7 @@ module lsb (
       end
       // work
       // $display("head:%0x size:%0x wo:%0x ms:%0x iqi:%0x iqj:%0x addr:%0x rhi:%0x qdes:%0x", head, size, working, mem_stuck, iQ1[head], iQ2[head], tmp_addr, rob_head_id, Qdes[head]);
-      if (size != 0 && working == 0 && !mem_stuck && iQ1[head] && iQ2[head] && ((op[head][6:0] == `ol && tmp_addr != 32'h30000 && tmp_addr != 32'h30004) || (rob_head_id == Qdes[head]))) begin
+      if (size != 0 && working == 0 && !mem_stuck && iQ1[head] && iQ2[head] && ((op[head][6:0] == `ol && tmp_addr[17:16] != 2'b11) || (rob_head_id == Qdes[head]))) begin
         working <= 1;
         is_store <= op[head][6:0] == `os;
         io_addr <= tmp_addr;
